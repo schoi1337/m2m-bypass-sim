@@ -1,119 +1,104 @@
-"""Groq-backed client used."""
+# path: src/models_client.py
+from typing import Literal
 
-from __future__ import annotations
+from groq import Groq
 
-from dataclasses import dataclass
-from typing import Literal, Optional, Sequence
+from .config import (
+    GROQ_API_KEY,
+    MODEL_A_NAME,
+    MODEL_B_NAME,
+    MODEL_C_NAME,
+    validate_config,
+)
 
-from . import config
-
-try:  # Groq is an optional runtime dependency during testing.
-    from groq import Groq
-except ImportError:  # pragma: no cover - exercised only without Groq installed.
-    Groq = None  # type: ignore[assignment]
-
-
-def _first_non_empty_attr(module: object, candidates: Sequence[str]) -> str:
-    """Return the first truthy attribute found on the module."""
-    for name in candidates:
-        value = getattr(module, name, "")
-        if isinstance(value, str) and value.strip():
-            return value.strip()
-    return ""
-
-
-@dataclass
-class ModelNames:
-    """Container for the three Groq model identifiers."""
-
-    model_a: str
-    model_b: str
-    model_c: str
+RoleType = Literal["system", "user"]
 
 
 class ModelClient:
-    """High level helper that talks to Groq chat completions."""
+    """
+    Simple wrapper around the Groq client for M2M experiments.
 
-    _TEMPERATURE: float = 0.2
+    This class provides three explicit entry points:
+    - Model A: summary / interpretation
+    - Model B: classification / risk scoring
+    - Model C: decision / action suggestion
+    """
 
-    def __init__(
-        self,
-        *,
-        api_key: Optional[str] = None,
-        model_a_name: Optional[str] = None,
-        model_b_name: Optional[str] = None,
-        model_c_name: Optional[str] = None,
-        client: Optional[Groq] = None,
-    ) -> None:
-        self._api_key = api_key or _first_non_empty_attr(
-            config,
-            ("GROQ_API_KEY", "API_KEY", "GROQ_KEY"),
+    def __init__(self) -> None:
+        """Initialize the client and validate configuration."""
+        validate_config()
+        if not GROQ_API_KEY:
+            # Extra safety check, should already be caught by validate_config.
+            raise RuntimeError("GROQ_API_KEY is not set.")
+
+        self.client = Groq(api_key=GROQ_API_KEY)
+
+    def _call_model(self, model_name: str, role: RoleType, content: str) -> str:
+        """
+        Call a single model and return the response content.
+
+        Args:
+            model_name: The model identifier to call.
+            role: The role for the message ("system" or "user").
+            content: The content to send to the model.
+
+        Returns:
+            The text content of the first completion choice.
+        """
+        # Debug print to confirm which model is being called.
+        # You can comment this out later if it is too noisy.
+        print(f"[DEBUG] Calling model: {model_name}")
+
+        response = self.client.chat.completions.create(
+            model=model_name,
+            messages=[
+                {
+                    "role": role,
+                    "content": content,
+                }
+            ],
+            temperature=0.2,
         )
-        self._models = ModelNames(
-            model_a=model_a_name
-            or _first_non_empty_attr(
-                config,
-                ("MODEL_A_NAME", "MODEL_A", "MODEL_SUMMARY"),
-            ),
-            model_b=model_b_name
-            or _first_non_empty_attr(
-                config,
-                ("MODEL_B_NAME", "MODEL_B", "MODEL_CLASSIFICATION"),
-            ),
-            model_c=model_c_name
-            or _first_non_empty_attr(
-                config,
-                ("MODEL_C_NAME", "MODEL_C", "MODEL_DECISION"),
-            ),
-        )
-        if client is not None:
-            self._client = client
-        elif self._api_key and Groq is not None:
-            self._client = Groq(api_key=self._api_key)
-        else:
-            self._client = None
-        if self._api_key and self._client is None and Groq is None:
-            raise ImportError(
-                "The 'groq' package is required to instantiate ModelClient without a custom client.",
-            )
+
+        message = response.choices[0].message
+        # Sometimes content can be None, so we guard against that.
+        text = message.content or ""
+        if not text.strip():
+            print("[WARN] Empty content returned from model.")
+        return text
 
     def call_model_a(self, content: str) -> str:
-        """Call Model A to obtain a summary or interpretation."""
-        return self._call_model(self._models.model_a, "user", content)
+        """
+        Call Model A (summary / interpretation).
+
+        Args:
+            content: Raw input text describing the user action or event.
+
+        Returns:
+            A summarized / interpreted version of the input.
+        """
+        return self._call_model(MODEL_A_NAME, "user", content)
 
     def call_model_b(self, content: str) -> str:
-        """Call Model B to obtain a classification or risk score."""
-        return self._call_model(self._models.model_b, "user", content)
+        """
+        Call Model B (classification / risk scoring).
+
+        Args:
+            content: Typically the output of Model A (summary).
+
+        Returns:
+            A classification or risk assessment for the summarized content.
+        """
+        return self._call_model(MODEL_B_NAME, "user", content)
 
     def call_model_c(self, content: str) -> str:
-        """Call Model C to obtain an action or decision recommendation."""
-        return self._call_model(self._models.model_c, "user", content)
+        """
+        Call Model C (decision / action suggestion).
 
-    def _call_model(
-        self,
-        model_name: str,
-        role: Literal["system", "user"],
-        content: str,
-    ) -> str:
-        """Thin wrapper around `chat.completions.create` with safe guards."""
-        if not content or not isinstance(content, str):
-            return ""
-        if not model_name or not self._client:
-            return ""
+        Args:
+            content: Typically the output of Model B (classification).
 
-        try:
-            completion = self._client.chat.completions.create(
-                model=model_name,
-                temperature=self._TEMPERATURE,
-                messages=[{"role": role, "content": content}],
-            )
-        except Exception:
-            return ""
-
-        choices = getattr(completion, "choices", None)
-        if not choices:
-            return ""
-        choice = choices[0]
-        message = getattr(choice, "message", None)
-        response_content = getattr(message, "content", "") if message else ""
-        return response_content.strip() if response_content else ""
+        Returns:
+            A final decision or action recommendation (e.g., alert / monitor / ignore).
+        """
+        return self._call_model(MODEL_C_NAME, "user", content)
