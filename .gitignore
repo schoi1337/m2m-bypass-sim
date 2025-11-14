@@ -1,0 +1,38 @@
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+
+# --- Virtual Environment ---
+.venv/
+venv/
+env/
+
+# --- Environment Variables ---
+.env
+.env.*
+
+# --- Editor / OS Files ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Logs / Cache ---
+*.log
+.cache/
+
+# --- Python tools ---
+.mypy_cache/
+.pytest_cache/
+coverage.xml
+htmlcov/
+
+# --- Jupyter (if added later) ---
+.ipynb_checkpoints/
