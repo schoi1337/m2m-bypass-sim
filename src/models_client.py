@@ -26,7 +26,7 @@ class ModelClient:
 
     def _call(self, model_name: str, content: str) -> str:
         """Internal helper to call a Groq chat model."""
-        print(f"[DEBUG] Calling model: {model_name}")
+        print(f"Calling model: {model_name}")
         resp = self.client.chat.completions.create(
             model=model_name,
             messages=[{"role": "user", "content": content}],
