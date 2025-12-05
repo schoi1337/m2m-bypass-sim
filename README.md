@@ -13,6 +13,13 @@ This makes it useful as:
 - A repeatable framework for internal red-team experiments
 - A teaching tool for showing how “policy-only” guardrails can still fail
 
+## Screenshots
+![/img/1.png]
+
+![/img/3.png]
+
+![/img/4.5.png]
+
 ## High-level architecture
 
 The pipeline is intentionally simple:
