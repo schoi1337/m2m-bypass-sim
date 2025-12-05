@@ -2,22 +2,16 @@
 
 ## Why this project exists
 
-Modern security teams are starting to chain multiple LLMs together:
+Modern SOC tooling increasingly relies on LLMs for alert triage and decision support.  
+`m2m-bypass-sim` gives you a *controlled* way to:
 
-- **Model A** – normalize noisy events (“what happened?”)  
-- **Model B** – assign a risk score / severity  
-- **Model C** – decide what to do (ignore / monitor / alert / escalate)  
+- Simulate model-to-model pipelines (summary → classification → action)
+- Toggle different “defence postures” (`neutral`, `normal`, `hardened`)
+- Measure how easily an injected model can bias downstream decisions
 
-On paper this looks powerful. In practice, it opens up a new attack surface:
-
-If an attacker can influence any part of this chain (input, summary, policy),  
-how easily can they **silently downgrade risk and actions**?
-
-The goal is a **reproducible, extensible lab** for:
-
-- Studying **prompt injection** against multi-stage pipelines (Model A → Model B → Model C)
-- Comparing **neutral / normal / hardened** system policies
-- Evaluating different **attack profiles** (inline, summary, policy hijack)
+This makes it useful as:
+- A repeatable framework for internal red-team experiments
+- A teaching tool for showing how “policy-only” guardrails can still fail
 
 ## High-level architecture
 
@@ -106,6 +100,11 @@ python -m src.pipeline run --attack policy_override
 - Python 3.10+
 - A valid Groq API key (Free one is ok)
 
+Under the hood this project uses the OpenAI-compatible Groq API.  
+Set `GROQ_API_KEY` from the Groq console and point your models to any supported Groq-hosted LLM.
+Get your API key from: https://console.groq.com/keys
+
+
 ### Installation
 ```sh
 git clone https://github.com/schoi1337/m2m-bypass-sim.git
@@ -130,7 +129,6 @@ MMODEL_A_NAME=llama-3.1-8b-instant
 MODEL_B_NAME=openai/gpt-oss-20b
 MODEL_C_NAME=llama-3.3-70b-versatile
 ```
-You can obtain a Groq API key from [here](https://console.groq.com/keys)
 
 ## Usage
 ### Baseline run
@@ -138,13 +136,13 @@ You can obtain a Groq API key from [here](https://console.groq.com/keys)
 Run all built-in events once in a given mode:
 ```sh
 # Neutral policy, no attack
-python -m src.pipeline run --mode neutral --attack none
+python -m src.core --mode neutral --attack none
 
 # Slightly conservative policy
-python -m src.pipeline run --mode normal --attack none
+python -m src.core --mode normal --attack none
 
 # Hardened policy
-python -m src.pipeline run --mode hardened --attack none
+python -m src.core --mode hardened --attack none
 ```
 
 You will see colorized output similar to:
