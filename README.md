@@ -10,8 +10,8 @@ Modern security teams are starting to chain multiple LLMs together:
 
 On paper this looks powerful. In practice, it opens up a new attack surface:
 
-> If an attacker can influence any part of this chain (input, summary, policy),  
-> how easily can they **silently downgrade risk and actions**?
+If an attacker can influence any part of this chain (input, summary, policy),  
+how easily can they **silently downgrade risk and actions**?
 
 The goal is a **reproducible, extensible lab** for:
 
@@ -25,7 +25,7 @@ The pipeline is intentionally simple:
 
 ```text
         ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
-        │   Model A    │      │   Model B    │      │   Model C    │
+        │  LLM Model A │      │LLM Model B   │      │ LLM Model C  │
         │  (Summary)   │      │ (Risk Score) │      │  (Decision)  │
         └──────┬───────┘      └──────┬───────┘      └──────┬───────┘
                │                     │                     │
@@ -122,16 +122,18 @@ The project expects configuration via `src/config.py` and/or a `.env` file.
 
 Typical environment variables:
 ```sh
-# API key (OpenAI-compatible endpoint)
-OPENAI_API_KEY=...
+# API key 
+GROQ_API_KEY=your_groq_api_key_here
 
 # Model names for A/B/C
 MMODEL_A_NAME=llama-3.1-8b-instant
 MODEL_B_NAME=openai/gpt-oss-20b
 MODEL_C_NAME=llama-3.3-70b-versatile
 ```
-### Usage
-#### Baseline run
+You can obtain a Groq API key from [here](https://console.groq.com/keys)
+
+## Usage
+### Baseline run
 
 Run all built-in events once in a given mode:
 ```sh
@@ -153,7 +155,7 @@ You will see colorized output similar to:
 - Stage C raw output + parsed action
 - JSON summary at the bottom
 
-#### Attack simulation (single profile)
+### Attack simulation (single profile)
 Simulate an attacker and inspect individual runs:
 ```sh
 # Inline attacker: modifies raw event text (prompt injection)
@@ -166,7 +168,7 @@ python -m src.pipeline run --mode normal --attack summary_injection
 python -m src.pipeline run --mode normal --attack policy_override
 ```
 
-#### Clean vs attacked comparison
+### Clean vs attacked comparison
 The compare subcommand automatically:
 - Runs a clean pipeline (`attack=none`)
 - Runs an attacked pipeline (`attack=<profile>`)
