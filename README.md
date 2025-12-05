@@ -157,13 +157,13 @@ You will see colorized output similar to:
 Simulate an attacker and inspect individual runs:
 ```sh
 # Inline attacker: modifies raw event text (prompt injection)
-python -m src.pipeline run --mode normal --attack inline_injection
+python -m src.core --mode normal --attack inline_injection
 
 # Summary injection: tampers with A→B boundary
-python -m src.pipeline run --mode normal --attack summary_injection
+python -m src.core --mode normal --attack summary_injection
 
 # Policy hijack: injects “prefer LOW / IGNORE” style rules
-python -m src.pipeline run --mode normal --attack policy_override
+python -m src.core --mode normal --attack policy_override
 ```
 
 ### Clean vs attacked comparison
