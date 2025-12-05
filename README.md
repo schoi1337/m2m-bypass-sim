@@ -14,11 +14,14 @@ This makes it useful as:
 - A teaching tool for showing how “policy-only” guardrails can still fail
 
 ## Screenshots
-![/img/1.png]
+Normal, Attack = None
+![normal mode](img/1.png)
 
-![/img/3.png]
+Normal, Attack Mode
+![attack mode](img/3.png)
 
-![/img/4.5.png]
+Compare 
+![compare mode](img/4.5.png)
 
 ## High-level architecture
 
