@@ -5,7 +5,7 @@
 Modern SOC tooling increasingly relies on LLMs for alert triage and decision support.  
 `m2m-bypass-sim` gives you a *controlled* way to:
 
-- Simulate model-to-model pipelines (summary → classification → action)
+- Simulate *model-to-model* pipelines (summary → classification → action)
 - Toggle different “defence postures” (`neutral`, `normal`, `hardened`)
 - Measure how easily an injected model can bias downstream decisions
 
