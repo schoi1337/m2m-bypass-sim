@@ -136,13 +136,11 @@ MODEL_C_NAME=llama-3.3-70b-versatile
 Run all built-in events once in a given mode:
 ```sh
 # Neutral policy, no attack
-python -m src.core --mode neutral --attack none
-
+python -m src.pipeline run --mode hardened --attack none
 # Slightly conservative policy
-python -m src.core --mode normal --attack none
-
+python -m src.pipeline run --mode normal --attack none
 # Hardened policy
-python -m src.core --mode hardened --attack none
+python -m src.pipeline run --mode hardened --attack none
 ```
 
 You will see colorized output similar to:
@@ -162,7 +160,7 @@ python -m src.core --mode normal --attack inline_injection
 # Summary injection: tampers with A→B boundary
 python -m src.core --mode normal --attack summary_injection
 
-# Policy hijack: injects “prefer LOW / IGNORE” style rules
+# Policy hijack: injects “prefer LOW / IGNORE” style rulespython -m src.core run --mode hardened --attack none
 python -m src.core --mode normal --attack policy_override
 ```
 

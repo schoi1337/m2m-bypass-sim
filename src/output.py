@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Optional
 
 from rich.console import Console
+from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Table
 from rich.theme import Theme
@@ -71,7 +72,7 @@ def pretty_print_result(result: StageResult) -> None:
     if result["attack_profile"] != "none":
         console.print(
             Panel.fit(
-                result["attacked_input"],
+                escape(result["attacked_input"]),
                 title="[section]FIRST ATTACKED INPUT[/section]",
                 border_style="red",
             )
